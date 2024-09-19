@@ -247,13 +247,12 @@
     let nsfwModel;
 
     // NSFWJS 모델 로드
+    // NSFWJS 모델 로드
     async function loadNSFWModel() {
       statusElement.innerText = "모델을 로드 중...";
       try {
-        // 모델 디렉토리 URL을 정확히 지정 (model.json을 포함하지 않음)
-        nsfwModel = await nsfwjs.load('https://nsfwjs-models.s3.amazonaws.com/');
-        // 또는 인자를 생략하여 기본 로드 사용
-        // nsfwModel = await nsfwjs.load();
+        // 올바른 모델 URL을 지정 (TensorFlow.js의 공개 모델 URL 사용)
+        nsfwModel = await nsfwjs.load('https://storage.googleapis.com/tfjs-models/savedmodel/nsfwjs/model.json');
         statusElement.innerText = "모델 로드 완료!";
       } catch (error) {
         console.error("모델 로드 실패:", error);
