@@ -250,7 +250,8 @@
     async function loadNSFWModel() {
       statusElement.innerText = "모델을 로드 중...";
       try {
-        nsfwModel = await nsfwjs.load();
+        // HTTPS로 명시적으로 모델 URL 지정
+        nsfwModel = await nsfwjs.load('https://nsfwjs-models.s3.amazonaws.com/model.json');
         statusElement.innerText = "모델 로드 완료!";
       } catch (error) {
         console.error("모델 로드 실패:", error);
