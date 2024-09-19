@@ -243,7 +243,7 @@
       statusElement.innerText = "모델을 로드 중...";
       try {
         // 올바른 HTTPS URL로 수정
-        nsfwModel = await nsfwjs.load('https://unpkg.com/nsfwjs@2.4.0/dist/model.json');
+        nsfwModel = await nsfwjs.load();
         statusElement.innerText = "모델 로드 완료!";
       } catch (error) {
         console.error("모델 로드 실패:", error);
