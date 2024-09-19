@@ -241,8 +241,8 @@
     // NSFWJS 모델 로드
     async function loadNSFWModel() {
       statusElement.innerText = "모델을 로드 중...";
-      // 모델을 HTTPS로 로드하도록 URL 수정
-      nsfwModel = await nsfwjs.load('https://cdn.jsdelivr.net/npm/nsfwjs@2.4.0/dist/model.json'); // HTTPS URL 사용
+      // 올바른 HTTPS URL로 수정
+      nsfwModel = await nsfwjs.load('https://cdn.jsdelivr.net/npm/nsfwjs@2.4.0/dist/model.json');
       statusElement.innerText = "모델 로드 완료!";
     }
 
