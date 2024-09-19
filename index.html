@@ -241,7 +241,8 @@
     // NSFWJS 모델 로드
     async function loadNSFWModel() {
       statusElement.innerText = "모델을 로드 중...";
-      nsfwModel = await nsfwjs.load();
+      // 모델을 HTTPS로 로드하도록 URL 수정
+      nsfwModel = await nsfwjs.load('https://cdn.jsdelivr.net/npm/nsfwjs@2.4.0/dist/model.json'); // HTTPS URL 사용
       statusElement.innerText = "모델 로드 완료!";
     }
 
@@ -581,9 +582,6 @@
         const isImage = imageExtensions.includes(fileExtension);
 
         if (isImage) {
-          const imgElement = document.createElement('img');
-          imgElement.src = URL.createObjectURL(blob);
-
           if (needsCensorship) {
             // 검열 적용 (블러 처리 및 '검열됨' 텍스트 오버레이)
             const wrapper = document.createElement('div');
@@ -600,18 +598,17 @@
             wrapper.appendChild(overlay);
             imageContainer.appendChild(wrapper);
           } else {
+            const imgElement = document.createElement('img');
+            imgElement.src = URL.createObjectURL(blob);
             imageContainer.appendChild(imgElement);
-          }
 
-          // 확대 기능
-          imgElement.addEventListener('click', function () {
-            imgElement.classList.toggle('expanded');
-          });
+            // 확대 기능
+            imgElement.addEventListener('click', function () {
+              imgElement.classList.toggle('expanded');
+            });
+          }
         } else {
           // 모든 비디오는 GIF로 변환되므로 이미지로 처리
-          const imgElement = document.createElement('img');
-          imgElement.src = URL.createObjectURL(blob);
-
           if (needsCensorship) {
             // 검열 적용 (블러 처리 및 '검열됨' 텍스트 오버레이)
             const wrapper = document.createElement('div');
@@ -628,13 +625,15 @@
             wrapper.appendChild(overlay);
             imageContainer.appendChild(wrapper);
           } else {
+            const imgElement = document.createElement('img');
+            imgElement.src = URL.createObjectURL(blob);
             imageContainer.appendChild(imgElement);
-          }
 
-          // 확대 기능
-          imgElement.addEventListener('click', function () {
-            imgElement.classList.toggle('expanded');
-          });
+            // 확대 기능
+            imgElement.addEventListener('click', function () {
+              imgElement.classList.toggle('expanded');
+            });
+          }
         }
       } catch (error) {
         console.error("이미지 로드 실패:", error);
