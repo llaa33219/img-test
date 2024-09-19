@@ -153,21 +153,29 @@
       }
     }
 
-    /* 검열된 이미지 스타일 */
+    /* 수정된 검열된 이미지 스타일 */
     .censored {
       position: relative;
       display: inline-block;
+      /* 이미지 자체는 숨기고 오버레이로만 표시 */
+      width: 100%;
+      height: 100%;
     }
 
     .censored img {
-      filter: blur(8px);
+      display: none; /* 이미지는 숨김 */
     }
 
     .censored .overlay {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8); /* 검열 배경 */
+      display: flex;
+      justify-content: center;
+      align-items: center;
       color: white;
       font-size: 24px;
       font-weight: bold;
@@ -242,7 +250,6 @@
     async function loadNSFWModel() {
       statusElement.innerText = "모델을 로드 중...";
       try {
-        // 올바른 HTTPS URL로 수정
         nsfwModel = await nsfwjs.load();
         statusElement.innerText = "모델 로드 완료!";
       } catch (error) {
@@ -400,7 +407,7 @@
           img.onload = async function() {
             try {
               const predictions = await nsfwModel.classify(img);
-              const inappropriateCategories = ['Porn', 'Sexy', 'Hentai'];
+              const inappropriateCategories = ['Porn', 'Sexy', 'Hentai', 'Violence']; // 'Violence' 추가
               let maxProbability = 0;
 
               predictions.forEach(prediction => {
@@ -468,12 +475,12 @@
           
           let safetyScore = 0;
           let uploadFile = mediaFile;
-          let needsCensorship = false;
+          let needsCensorship = true; // 기본적으로 검열을 강하게 적용
 
           if (isImage) {
             safetyScore = await getImageSafetyScore(mediaFile);
-            if (safetyScore > 0.7) { // 임계값 설정 (0.7 이상이면 부적절)
-              needsCensorship = true;
+            if (safetyScore < 0.3) { // 임계값을 낮춰서 안전하다고 판단되는 경우만 검열 해제
+              needsCensorship = false;
             }
           }
 
@@ -487,13 +494,13 @@
 
             // 변환된 GIF의 안전성 검사
             safetyScore = await getImageSafetyScore(uploadFile);
-            if (safetyScore > 0.7) {
-              needsCensorship = true;
+            if (safetyScore < 0.3) { // 임계값을 낮춰서 안전하다고 판단되는 경우만 검열 해제
+              needsCensorship = false;
             }
           }
 
           statusElement.innerText = "업로드 중...";
-          const uniqueName = Math.random().toString(36).substring(2, 8);
+          const uniqueName = Math.random().toString(36).substring(2, 15); // 고유 이름 생성
           console.log(`Uploading as: ${uniqueName}`);
           const storageRef = ref(storage, uniqueName);
           await uploadBytes(storageRef, uploadFile);
@@ -588,7 +595,7 @@
 
         if (isImage) {
           if (needsCensorship) {
-            // 검열 적용 (블러 처리 및 '검열됨' 텍스트 오버레이)
+            // 검열 적용 (검열 텍스트 오버레이)
             const wrapper = document.createElement('div');
             wrapper.classList.add('censored');
 
@@ -615,7 +622,7 @@
         } else {
           // 모든 비디오는 GIF로 변환되므로 이미지로 처리
           if (needsCensorship) {
-            // 검열 적용 (블러 처리 및 '검열됨' 텍스트 오버레이)
+            // 검열 적용 (검열 텍스트 오버레이)
             const wrapper = document.createElement('div');
             wrapper.classList.add('censored');
 
