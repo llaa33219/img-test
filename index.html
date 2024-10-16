@@ -371,7 +371,7 @@
           // Set canvas dimensions to video dimensions
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
-          
+
           // 재생 속도 다시 설정 (안전 조치)
           video.playbackRate = 1;
 
@@ -899,13 +899,25 @@
                 showCustomContextMenu(event, imgElement);
               });
             } else if (isVideo) {
+              // 로딩 메시지 생성
+              const loadingIndicator = document.createElement('div');
+              loadingIndicator.innerText = "동영상 로드 중...";
+              loadingIndicator.style.textAlign = 'center';
+              loadingIndicator.style.margin = '20px auto';
+              loadingIndicator.style.color = '#333';
+              imageContainer.appendChild(loadingIndicator);
+
               const videoElement = document.createElement('video');
               videoElement.src = url;
               videoElement.controls = true;
-              videoElement.style.cursor = 'pointer';
-              imageContainer.appendChild(videoElement);
-
-              // 동영상에는 확대 기능을 적용하지 않음
+              videoElement.style.cursor = 'default'; // 커서 변경 (확대 기능 제거)
+              videoElement.preload = 'auto'; // 비디오 사전 로드
+              
+              // 동영상이 완전히 로드되면 로딩 메시지를 제거하고 동영상을 추가
+              videoElement.addEventListener('canplaythrough', () => {
+                imageContainer.removeChild(loadingIndicator);
+                imageContainer.appendChild(videoElement);
+              });
 
               // 사용자 정의 컨텍스트 메뉴 이벤트 추가
               videoElement.addEventListener('contextmenu', function(event) {
