@@ -98,13 +98,9 @@
     }
   
     #imageContainer img.expanded,
-    #imageContainer video.expanded {
-      width: 80vw;
-      height: auto;
-      max-height: 100vh;
-      max-width: 80vw;
-      cursor: zoom-out;
-      object-fit: contain;
+    /* 동영상에는 확대 기능을 적용하지 않음 */
+    #imageContainer video {
+      /* 비디오에는 확대 기능을 적용하지 않음 */
     }
   
     .container {
@@ -368,6 +364,7 @@
 
         video.src = URL.createObjectURL(videoFile);
         video.crossOrigin = 'anonymous';
+        video.muted = true; // 소리 제거
         video.load();
 
         video.addEventListener('loadedmetadata', () => {
@@ -376,7 +373,8 @@
           canvas.height = video.videoHeight;
 
           mediaRecorder = new MediaRecorder(stream, {
-            mimeType: 'video/webm; codecs=vp8'
+            mimeType: 'video/webm; codecs=vp9', // VP9 코덱 사용
+            videoBitsPerSecond: 2500000 // 비트레이트 설정 (예: 2.5 Mbps)
           });
 
           mediaRecorder.ondataavailable = (event) => {
@@ -887,7 +885,7 @@
               imgElement.src = url; // 직접 다운로드 URL 할당
               imageContainer.appendChild(imgElement);
 
-              // 확대 기능
+              // 확대 기능 (이미지에만 적용)
               imgElement.addEventListener('click', function () {
                 imgElement.classList.toggle('expanded');
               });
@@ -904,10 +902,7 @@
               videoElement.style.cursor = 'pointer';
               imageContainer.appendChild(videoElement);
 
-              // 확대 기능
-              videoElement.addEventListener('click', function () {
-                videoElement.classList.toggle('expanded');
-              });
+              // 동영상에는 확대 기능을 적용하지 않음
 
               // 사용자 정의 컨텍스트 메뉴 이벤트 추가
               videoElement.addEventListener('contextmenu', function(event) {
