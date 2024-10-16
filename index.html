@@ -232,6 +232,10 @@
     }
     /* 기존 기타 스타일 유지 */
   </style>  
+  <!-- Video.js CSS -->
+  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+  <!-- Video.js JavaScript -->
+  <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
 </head>
 <body>
   <div class="header-content">
@@ -371,7 +375,7 @@
           // Set canvas dimensions to video dimensions
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
-
+          
           // 재생 속도 다시 설정 (안전 조치)
           video.playbackRate = 1;
 
@@ -899,24 +903,29 @@
                 showCustomContextMenu(event, imgElement);
               });
             } else if (isVideo) {
-              // 로딩 메시지 생성
-              const loadingIndicator = document.createElement('div');
-              loadingIndicator.innerText = "동영상 로드 중...";
-              loadingIndicator.style.textAlign = 'center';
-              loadingIndicator.style.margin = '20px auto';
-              loadingIndicator.style.color = '#333';
-              imageContainer.appendChild(loadingIndicator);
-
+              // Video.js 플레이어 요소 생성
               const videoElement = document.createElement('video');
-              videoElement.src = url;
+              videoElement.className = 'video-js vjs-default-skin';
               videoElement.controls = true;
+              videoElement.preload = 'auto';
               videoElement.style.cursor = 'default'; // 커서 변경 (확대 기능 제거)
-              videoElement.preload = 'auto'; // 비디오 사전 로드
+              videoElement.dataset.setup = '{}'; // Video.js 초기화를 위한 데이터 속성
               
-              // 동영상이 완전히 로드되면 로딩 메시지를 제거하고 동영상을 추가
-              videoElement.addEventListener('canplaythrough', () => {
-                imageContainer.removeChild(loadingIndicator);
-                imageContainer.appendChild(videoElement);
+              const sourceElement = document.createElement('source');
+              sourceElement.src = url;
+              sourceElement.type = 'video/webm'; // WebM 형식 사용
+              videoElement.appendChild(sourceElement);
+              
+              imageContainer.appendChild(videoElement);
+
+              // Video.js 플레이어 초기화
+              const player = videojs(videoElement, {
+                responsive: true,
+                fluid: true,
+                controlBar: {
+                  progressControl: true,
+                  volumePanel: { inline: false }
+                }
               });
 
               // 사용자 정의 컨텍스트 메뉴 이벤트 추가
