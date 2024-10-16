@@ -903,30 +903,13 @@
                 showCustomContextMenu(event, imgElement);
               });
             } else if (isVideo) {
-              // Video.js 플레이어 요소 생성
               const videoElement = document.createElement('video');
-              videoElement.className = 'video-js vjs-default-skin';
+              videoElement.src = url;
               videoElement.controls = true;
-              videoElement.preload = 'auto';
-              videoElement.style.cursor = 'default'; // 커서 변경 (확대 기능 제거)
-              videoElement.dataset.setup = '{}'; // Video.js 초기화를 위한 데이터 속성
-              
-              const sourceElement = document.createElement('source');
-              sourceElement.src = url;
-              sourceElement.type = 'video/webm'; // WebM 형식 사용
-              videoElement.appendChild(sourceElement);
-              
+              videoElement.style.cursor = 'pointer';
               imageContainer.appendChild(videoElement);
 
-              // Video.js 플레이어 초기화
-              const player = videojs(videoElement, {
-                responsive: true,
-                fluid: true,
-                controlBar: {
-                  progressControl: true,
-                  volumePanel: { inline: false }
-                }
-              });
+              // 동영상에는 확대 기능을 적용하지 않음
 
               // 사용자 정의 컨텍스트 메뉴 이벤트 추가
               videoElement.addEventListener('contextmenu', function(event) {
