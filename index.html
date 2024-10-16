@@ -371,6 +371,9 @@
           // Set canvas dimensions to video dimensions
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
+          
+          // 재생 속도 다시 설정 (안전 조치)
+          video.playbackRate = 1;
 
           mediaRecorder = new MediaRecorder(stream, {
             mimeType: 'video/webm; codecs=vp9', // VP9 코덱 사용
