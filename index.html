@@ -642,6 +642,20 @@
       });
     }
 
+    // 사이트 소리 음소거 함수
+    function muteSiteSounds() {
+      document.querySelectorAll('audio, video').forEach(el => {
+        el.muted = true;
+      });
+    }
+
+    // 사이트 소리 복원 함수
+    function unmuteSiteSounds() {
+      document.querySelectorAll('audio, video').forEach(el => {
+        el.muted = false;
+      });
+    }
+
     // 파일 업로드
     uploadButton.addEventListener('click', async () => {
       const mediaFiles = fileInput.files;
@@ -655,84 +669,105 @@
       let uploadedNames = [];
       let skippedFiles = []; // 업로드를 건너뛴 파일 목록
 
-      for (const mediaFile of mediaFiles) {
-        const fileNameParts = mediaFile.name.split('.');
-        if (fileNameParts.length < 2) {
-          statusElement.innerText = "파일에 확장자가 없습니다.";
-          return;
-        }
-        const fileExtension = fileNameParts.pop().toLowerCase();
-        const isImage = allowedImageExtensions.includes(fileExtension);
-        const isVideo = allowedVideoExtensions.includes(fileExtension);
+      // 업로드할 파일 중 동영상 파일이 있는지 확인
+      const isAnyVideo = Array.from(mediaFiles).some(file => {
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        return allowedVideoExtensions.includes(fileExtension);
+      });
 
-        console.log(`Processing file: ${mediaFile.name}, Extension: ${fileExtension}, isImage: ${isImage}, isVideo: ${isVideo}`);
-
-        if (!isImage && !isVideo) {
-          statusElement.innerText = "허용되지 않은 파일 형식입니다.";
-          return;
-        }
-
-        try {
-          let uploadFile = mediaFile;
-          let censorshipReasons = []; // 검열 이유를 저장할 배열
-
-          if (isImage) {
-            const { isCensored, reasons } = await getImageSafetyScore(mediaFile);
-            if (isCensored) {
-              censorshipReasons = reasons;
-            }
-          }
-
-          if (isVideo) {
-            // 동영상 압축
-            statusElement.innerText = "동영상 압축 중...";
-            uploadFile = await compressVideo(mediaFile);
-            if (!uploadFile) {
-              statusElement.innerText = "동영상 압축 실패";
-              return;
-            }
-
-            // 압축된 동영상의 첫 프레임을 이미지로 추출하여 안전성 검사
-            statusElement.innerText = "동영상 첫 프레임 분석 중...";
-            const firstFrameBlob = await extractFirstFrame(uploadFile);
-            const { isCensored, reasons } = await getImageSafetyScore(firstFrameBlob);
-            if (isCensored) {
-              censorshipReasons = reasons;
-            }
-          }
-
-          if (censorshipReasons.length > 0) {
-            console.log(`검열 필요: ${mediaFile.name}`);
-            skippedFiles.push({ name: mediaFile.name, reasons: censorshipReasons }); // 파일명과 이유를 함께 저장
-            continue; // 다음 파일로 넘어감
-          }
-
-          statusElement.innerText = "업로드 중...";
-          const uniqueName = Math.random().toString(36).substring(2, 15); // 고유 이름 생성
-          console.log(`Uploading as: ${uniqueName}`);
-          const storageRef = ref(storage, uniqueName);
-          await uploadBytes(storageRef, uploadFile);
-          const downloadURL = await getDownloadURL(storageRef);
-          await setDoc(doc(db, 'images', uniqueName), { url: downloadURL, censored: false, type: isVideo ? 'video' : 'image' });
-          uploadedNames.push(uniqueName);
-          console.log(`Uploaded: ${uniqueName}, URL: ${downloadURL}`);
-        } catch (error) {
-          console.error("업로드 실패:", error);
-          statusElement.innerText = "업로드 실패: " + error.message;
-          return;
-        }
+      if (isAnyVideo) {
+        // 사이트 소리 음소거
+        muteSiteSounds();
       }
 
-      if (uploadedNames.length > 0) {
-        const imageUrl = `https://bloupla.net/img/?=${uploadedNames.join(',')}`;
-        document.getElementById('linkBox').value = imageUrl;
-        statusElement.innerText = "업로드 성공!";
-      }
+      try {
+        for (const mediaFile of mediaFiles) {
+          const fileNameParts = mediaFile.name.split('.');
+          if (fileNameParts.length < 2) {
+            statusElement.innerText = "파일에 확장자가 없습니다.";
+            return;
+          }
+          const fileExtension = fileNameParts.pop().toLowerCase();
+          const isImage = allowedImageExtensions.includes(fileExtension);
+          const isVideo = allowedVideoExtensions.includes(fileExtension);
 
-      if (skippedFiles.length > 0) {
-        // 각 파일의 검열 이유와 파일명을 함께 표시
-        const skippedList = skippedFiles.map(file => `${file.reasons.join(', ')} (${file.name})`).join('; ');
-        statusElement.innerText= `부적절한 내용이 감지되었습니다: ${skippedList}`;
+          console.log(`Processing file: ${mediaFile.name}, Extension: ${fileExtension}, isImage: ${isImage}, isVideo: ${isVideo}`);
+
+          if (!isImage && !isVideo) {
+            statusElement.innerText = "허용되지 않은 파일 형식입니다.";
+            return;
+          }
+
+          try {
+            let uploadFile = mediaFile;
+            let censorshipReasons = []; // 검열 이유를 저장할 배열
+
+            if (isImage) {
+              const { isCensored, reasons } = await getImageSafetyScore(mediaFile);
+              if (isCensored) {
+                censorshipReasons = reasons;
+              }
+            }
+
+            if (isVideo) {
+              // 동영상 압축
+              statusElement.innerText = "동영상 압축 중...";
+              uploadFile = await compressVideo(mediaFile);
+              if (!uploadFile) {
+                statusElement.innerText = "동영상 압축 실패";
+                return;
+              }
+
+              // 압축된 동영상의 첫 프레임을 이미지로 추출하여 안전성 검사
+              statusElement.innerText = "동영상 첫 프레임 분석 중...";
+              const firstFrameBlob = await extractFirstFrame(uploadFile);
+              const { isCensored, reasons } = await getImageSafetyScore(firstFrameBlob);
+              if (isCensored) {
+                censorshipReasons = reasons;
+              }
+            }
+
+            if (censorshipReasons.length > 0) {
+              console.log(`검열 필요: ${mediaFile.name}`);
+              skippedFiles.push({ name: mediaFile.name, reasons: censorshipReasons }); // 파일명과 이유를 함께 저장
+              continue; // 다음 파일로 넘어감
+            }
+
+            statusElement.innerText = "업로드 중...";
+            const uniqueName = Math.random().toString(36).substring(2, 15); // 고유 이름 생성
+            console.log(`Uploading as: ${uniqueName}`);
+            const storageRef = ref(storage, uniqueName);
+            await uploadBytes(storageRef, uploadFile);
+            const downloadURL = await getDownloadURL(storageRef);
+            await setDoc(doc(db, 'images', uniqueName), { url: downloadURL, censored: false, type: isVideo ? 'video' : 'image' });
+            uploadedNames.push(uniqueName);
+            console.log(`Uploaded: ${uniqueName}, URL: ${downloadURL}`);
+          } catch (error) {
+            console.error("업로드 실패:", error);
+            statusElement.innerText = "업로드 실패: " + error.message;
+            return;
+          }
+        }
+
+        if (uploadedNames.length > 0) {
+          const imageUrl = `https://bloupla.net/img/?=${uploadedNames.join(',')}`;
+          document.getElementById('linkBox').value = imageUrl;
+          statusElement.innerText = "업로드 성공!";
+        }
+
+        if (skippedFiles.length > 0) {
+          // 각 파일의 검열 이유와 파일명을 함께 표시
+          const skippedList = skippedFiles.map(file => `${file.reasons.join(', ')} (${file.name})`).join('; ');
+          statusElement.innerText= `부적절한 내용이 감지되었습니다: ${skippedList}`;
+        }
+      } catch (error) {
+        console.error("업로드 중 오류 발생:", error);
+        statusElement.innerText = "업로드 중 오류가 발생했습니다.";
+      } finally {
+        if (isAnyVideo) {
+          // 사이트 소리 복원
+          unmuteSiteSounds();
+        }
       }
     });
 
