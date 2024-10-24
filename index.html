@@ -117,13 +117,22 @@
       max-height: 50vh;
     }
   
-    #imageContainer img.expanded {
+    /* 확대된 상태의 가로가 긴 경우 */
+    #imageContainer img.expanded.landscape,
+    #imageContainer video.expanded.landscape {
       width: 80vw;
       height: auto;
-      max-height: 100vh;
       max-width: 80vw;
-      cursor: zoom-out;
-      object-fit: contain;
+      max-height: 100vh;
+    }
+
+    /* 확대된 상태의 세로가 긴 경우 */
+    #imageContainer img.expanded.portrait,
+    #imageContainer video.expanded.portrait {
+      width: auto;
+      height: 100vh;
+      max-width: 80vw;
+      max-height: 100vh;
     }
 
     .container {
