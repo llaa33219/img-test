@@ -106,6 +106,7 @@
       height: auto;
       max-width: 40vw;
       max-height: 50vh;
+      cursor: zoom-in; /* 기본 상태에서는 확대 아이콘 */
     }
 
     /* 세로가 긴 경우 */
@@ -115,6 +116,7 @@
       height: 50vh;
       max-width: 40vw;
       max-height: 50vh;
+      cursor: zoom-in; /* 기본 상태에서는 확대 아이콘 */
     }
   
     /* 확대된 상태의 가로가 긴 경우 */
@@ -124,6 +126,7 @@
       height: auto;
       max-width: 80vw;
       max-height: 100vh;
+      cursor: zoom-out;
     }
 
     /* 확대된 상태의 세로가 긴 경우 */
@@ -133,8 +136,9 @@
       height: 100vh;
       max-width: 80vw;
       max-height: 100vh;
+      cursor: zoom-out;
     }
-
+  
     .container {
       text-align: center;
     }
@@ -388,7 +392,7 @@
       }
     });
 
-    // 동영상 압축 함수 (WebM 형식으로)
+    // 동영상 압축 함수 (WebM 형식에서 AV1으로 변경됨)
     async function compressVideo(videoFile) {
       return new Promise((resolve, reject) => {
         const video = document.createElement('video');
@@ -412,7 +416,7 @@
           video.playbackRate = 1;
 
           mediaRecorder = new MediaRecorder(stream, {
-            mimeType: 'video/webm; codecs=vp9', // VP9 코덱 사용
+            mimeType: 'video/webm; codecs=av01.0.0', // 변경됨: AV1 코덱 사용
             videoBitsPerSecond: 2500000 // 비트레이트 설정 (예: 2.5 Mbps)
           });
 
